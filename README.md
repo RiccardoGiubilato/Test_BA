@@ -27,7 +27,7 @@ Written and tested on Matlab 2016a
 
 ##### Notes
 If you find this code useful and you want to check my recent publications, please visit my 
-ResearchGate page at this [link](https://www.researchgate.net/profile/Riccardo_Giubilato)
+ResearchGate page at this [link](https://www.researchgate.net/profile/Riccardo_Giubilato).
 If you have any questions, my email address is riccardo.giubilato@gmail.com
 
 
