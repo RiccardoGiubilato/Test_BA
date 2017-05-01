@@ -1,3 +1,16 @@
+% Bundle Adjustment Problem using LSQNONLIN
+% -----------------------------------------
+% This code implements Bundle Adjustment using a user generated set
+% of 3D point coordinates and camera 6D poses. All the parameters
+% can be modified to implement whatever situation comes into the 
+% user's mind.
+%
+% Author: Riccardo Giubilato, Padova (Italy) 2016
+% mail:   riccardo.giubilato@gmail.com
+% https://www.researchgate.net/profile/Riccardo_Giubilato
+% -------------------------------------------------------
+% Written and tested on Matlab 2016a
+
 clearvars
 close all
 

@@ -1,9 +1,3 @@
-% Author: Riccardo Giubilato, Padova (Italy) 2016
-% mail:   riccardo.giubilato@gmail.com
-% https://www.researchgate.net/profile/Riccardo_Giubilato
-% -------------------------------------------------------
-% Written and tested on Matlab 2016a
-
 function isVisible = pointIsVisible( point, Cam, FOV )
 
 % transform to local coordinates

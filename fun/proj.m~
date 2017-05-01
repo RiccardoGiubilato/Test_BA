@@ -1,9 +1,3 @@
-% Author: Riccardo Giubilato, Padova (Italy) 2016
-% mail:   riccardo.giubilato@gmail.com
-% https://www.researchgate.net/profile/Riccardo_Giubilato
-% -------------------------------------------------------
-% Written and tested on Matlab 2016a
-
 function obs = proj(point, Cam, K)
 % @input point, 3x1 vector of 3D point coordinates in world reference
 % @input Cam,   4x4 transformation matrix of the camera

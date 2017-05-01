@@ -1,8 +1,21 @@
+% Bundle Adjustment Problem using LSQNONLIN
+% -----------------------------------------
+% This code implements Bundle Adjustment using a user generated set
+% of 3D point coordinates and camera 6D poses. All the parameters
+% can be modified to implement whatever situation comes into the 
+% user's mind.
+%
+% Author: Riccardo Giubilato, Padova (Italy) 2016
+% mail:   riccardo.giubilato@gmail.com
+% https://www.researchgate.net/profile/Riccardo_Giubilato
+% -------------------------------------------------------
+% Written and tested on Matlab 2016a
+
 clearvars
 close all
 
-nPoints = 1000;
-nCamera = 5;
+nPoints = 100;
+nCamera = 8;
 depth   = 1000; %[mm]
 fSx     = 1000; %[px/mm*mm]
 fSy     = 1000;
@@ -16,30 +29,31 @@ trans_noise = depth/20;
 
 use_finite_diff = 0; % 1 for finite differences, 0 for levenberg-marquardt
 
-%% Generazione pose e point cloud
+%% Pose and Point Cloud Generation
 Points  = depth*[-0.5+rand(nPoints,2) ones(nPoints,1)];
 Points(:,1) = nCamera/5*Points(:,1);
 Camera = zeros(4,4,nCamera);
-dist_factor = 4*depth; % aggiustare il moltiplicatore per spaziare le camere
+dist_factor = 1*depth; % adjust this parameter to set a correct spacing
+                       % between the cameras
 for i=1:nCamera
     t = dist_factor*[(-0.5 + (i-1)/nCamera);0;0];
     Camera(:,:,i) = [eye(3) t; 0 0 0 1];
 end
  
-%% Generazione osservazioni
+%% Observation Generation (u,v) coordinates of "image features"
 Obs = cell(1,nCamera); %[u,v,pointdIdx]
 %Err = cell(1,nCamera);
 K = [fSx 0 cx; 0 fSy cy; 0 0 1];
 for n=1:nCamera
     for i=1:nPoints
          if pointIsVisible( Points(i,:)', Camera(1:3,:,n), FOV )
-           Obs{n}(end+1,:) = [proiezione( Points(i,:)', Camera(1:3,:,n), K ), i];
-           %Err{n}(end+1) = riproiezione (Obs{n}(end,1:2), Points(i,:)', Camera(1:3,:,n), K);
+           Obs{n}(end+1,:) = [proj( Points(i,:)', Camera(1:3,:,n), K ), i];
+           %Err{n}(end+1) = reproj (Obs{n}(end,1:2), Points(i,:)', Camera(1:3,:,n), K);
          end
     end
 end
 
-%% Aggiunta errore a Points e Camera
+%% Adding noise to Points e Camera
 Points = Points + depth_noise*randn(size(Points,1), size(Points, 2));
 max_angular_error = angle_noise;
 for i=1:nCamera
@@ -51,11 +65,11 @@ end
 Err = cell(1,nCamera);
 for n=1:nCamera
     for i=1:size(Obs{n},1)
-       Err{n}(i) = riproiezione (Obs{n}(i,1:2), Points(Obs{n}(i,3),:)', Camera(1:3,:,n), K);
+       Err{n}(i) = reproj (Obs{n}(i,1:2), Points(Obs{n}(i,3),:)', Camera(1:3,:,n), K);
     end
 end
 
-%% Plot prima del Bundle Adjustment
+%% Plot before Bundle Adjustment
 figure
 scatter3(Points(:,1),Points(:,2),Points(:,3),'c')
 hold on
@@ -73,30 +87,30 @@ figure
 for i=1:nCamera
    subplot(4,nCamera/4,i)
    scatter(Obs{i}(:,1),Obs{i}(:,2),'c')
-   proj = zeros(nPoints,2);
+   projectons = zeros(nPoints,2);
    for j=1:nPoints
        if any(Obs{i}(:,3)==j)
-        proj(j,:) = proiezione(Points(j,:)', Camera(1:3,:,i), K);
+        projectons(j,:) = proj(Points(j,:)', Camera(1:3,:,i), K);
        end
    end
    hold on 
-   scatter(proj(:,1),proj(:,2),'.')
+   scatter(projectons(:,1),projectons(:,2),'.')
 end
 title('Camera image frames. Measures and reprojections. Before BA')
 
-%% Bundle Adjustment - riproiezione
+%% Bundle Adjustment - reprojection
 [Points, Camera] = bundleAdj(Points, Camera, Obs, K, use_finite_diff);
 
 ErrBA = cell(1,nCamera);
 for n=1:nCamera
     for i=1:size(Obs{n},1)
-       ErrBA{n}(i) = riproiezione (Obs{n}(i,1:2), Points(Obs{n}(i,3),:)', Camera(1:3,:,n), K);
+       ErrBA{n}(i) = reproj (Obs{n}(i,1:2), Points(Obs{n}(i,3),:)', Camera(1:3,:,n), K);
     end
 end
 
-%% Plot dopo del Bundle Adjustment
-fprintf('Errore medio di riproiezione prima del BA: %02d \n', mean(cellfun(@mean,Err)))
-fprintf('Errore medio di riproiezione dopo il BA: %02d   \n', mean(cellfun(@mean,ErrBA)))
+%% Plot after Bundle Adjustment
+fprintf('Mean reprojection error before BA: %02d \n', mean(cellfun(@mean,Err)))
+fprintf('Mean reprojection error after BA:  %02d   \n', mean(cellfun(@mean,ErrBA)))
 
 figure
 scatter3(Points(:,1),Points(:,2),Points(:,3),'c')
@@ -115,13 +129,13 @@ figure
 for i=1:nCamera
    subplot(4,nCamera/4,i)
    scatter(Obs{i}(:,1),Obs{i}(:,2),'c')
-   proj = zeros(nPoints,2);
+   projections = zeros(nPoints,2);
    for j=1:nPoints
        if any(Obs{i}(:,3)==j)
-        proj(j,:) = proiezione(Points(j,:)', Camera(1:3,:,i), K);
+        projections(j,:) = proj(Points(j,:)', Camera(1:3,:,i), K);
        end
    end
    hold on 
-   scatter(proj(:,1),proj(:,2),'.')
+   scatter(projections(:,1),projections(:,2),'.')
 end
 title('Camera image frames. Measures and reprojections. After BA')

@@ -4,9 +4,9 @@ function R = eul2rotm(eul)
     y = eul(2);
     z = eul(3);
 
-    X = eye(3,3);
-    Y = eye(3,3);
-    Z = eye(3,3);
+	X = eye(3,3);
+	Y = eye(3,3);
+	Z = eye(3,3);
 
     X(2,2) = cos(x);
     X(2,3) = -sin(x);
@@ -23,6 +23,5 @@ function R = eul2rotm(eul)
     Z(2,1) = sin(z);
     Z(2,2) = cos(z);
 
-    R = Z*Y*X;
-
+	R = Z*Y*X;
 end
